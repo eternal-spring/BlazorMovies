@@ -1,0 +1,46 @@
+﻿@page "/tags/search/{name}"
+@inject IMovieService MovieService
+@inject NavigationManager NavigationManager
+@inject HttpClient Http
+
+@if (tags == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Found tags</th>
+                </tr>
+            </thead>
+            <tbody>
+                <div class="scroll">
+
+                    @foreach (var tag in tags)
+                    {
+                    <tr>
+                        <td>
+                            <button class="btn btn-primary" @onclick="(() => ShowTag(tag.TagId))">@tag.Name</button>
+                        </td>
+                    </tr>
+                }
+        </div>
+        </tbody>
+        </table>
+    }
+@code {
+    [Parameter]
+    public string Name { get; set; }
+    List<BlazorMovies.Shared.Tag> tags = null;
+    protected override async Task OnParametersSetAsync()
+    {
+        tags = await MovieService.GetTagsByName(Name);
+        MovieService.OnChange += StateHasChanged;
+    }
+    void ShowTag(string id)
+    {
+        NavigationManager.NavigateTo($"tags/{id}");
+    }
+}

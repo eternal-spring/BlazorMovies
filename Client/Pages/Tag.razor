@@ -1,0 +1,59 @@
+﻿@page "/tags/{id}"
+@inject IMovieService MovieService
+@inject NavigationManager NavigationManager
+@inject HttpClient Http
+<head>
+    <style>
+        div.scroll {
+            margin: 8px, 8px;
+            padding: 8px;
+            overflow: auto;
+            height: 800px;
+            white-space: nowrap;
+            position: relative;
+            width: 350px;
+        }
+    </style>
+</head>
+@if (tag == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <h1>@tag.Name</h1>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Movies</th>
+                </tr>
+            </thead>
+            <tbody>
+                <div class="scroll">
+
+                    @foreach (var movie in tag.Movies)
+                    {
+                    <tr>
+                        <td>
+                            <button class="btn btn-primary" @onclick="(() => ShowMovie(movie.ImdbId))">@movie.EngName</button>
+                        </td>
+                    </tr>
+                }
+        </div>
+        </tbody>
+        </table>
+    }
+@code {
+    [Parameter]
+    public string Id { get; set; }
+    BlazorMovies.Shared.Tag tag = null;
+    protected override async Task OnParametersSetAsync()
+    {
+        tag = await MovieService.GetTag(Id);
+        MovieService.OnChange += StateHasChanged;
+    }
+    void ShowMovie(string id)
+    {
+        NavigationManager.NavigateTo($"movies/{id}");
+    }
+}

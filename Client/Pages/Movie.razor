@@ -1,0 +1,190 @@
+﻿@page "/movies/{id}"
+@inject IMovieService MovieService
+@inject IOmdbService OmdbService
+@inject NavigationManager NavigationManager
+@inject HttpClient Http
+<head>
+    <style>
+        div.scroll {
+            margin: 8px, 8px;
+            padding: 8px;
+            overflow: auto;
+            width: initial;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        div.list-group {
+            clear: right;
+            float: right;
+            right: 0;
+            top: 0;
+            margin-left: auto;
+            width: 300px;
+            margin-block: 4px;
+            margin-top: 4px;
+        }
+
+        div.container {
+            float: left;
+            float: inline-start;
+            bottom: auto;
+            margin-left: auto;
+            margin-right: auto;
+            width:max-content;
+        }
+
+        div.media {
+            width: 800px;
+            left: 50px;
+        }
+
+            div.media.media-img-big-wrapper {
+                clear: left;
+                float: left;
+            }
+
+        div.card.card-body {
+            max-width: 4px;
+            max-height: 300px;
+        }
+
+        .row {
+            align-items: stretch;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        .card {
+            max-width: 33.333%;
+            border: 0;
+            flex-grow: 0;
+            flex-shrink: 0;
+        }
+
+            .card > img {
+                margin-bottom: .15rem;
+                width: 50%;
+            }
+
+        .card-text {
+            font-size: 85%;
+        }
+    </style>
+</head>
+
+@if (movie == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="container float-left">
+        <div class="media float-left">
+            <div class="media-img-big-wrapper mr-2">
+                <img class="media-img-big" src="@movie.Poster" alt="@movie.EngName" />
+            </div>
+            <div class="media-body">
+                <h1 class="mb-0">@movie.EngName</h1>
+                <h3 class="mb-0">@movie.RuName</h3>
+                <h5 class="mb-0">@movie.Rating</h5>
+                <p>@movie.Plot</p>
+            </div>
+        </div>
+        <div class="list-group">
+            <a class="list-group-item list-group-item-action disabled">Actors</a>
+            @foreach (var actor in @movie.Actors)
+            {
+
+                <a class="list-group-item list-group-item-action" @onclick="(() => ShowActor(actor.PersonId))">@actor.Name</a>
+            }
+        </div>
+        <div class="list-group">
+            <a class="list-group-item list-group-item-action disabled">Director</a>
+            @foreach (var director in @movie.Directors)
+            {
+
+                <a class="list-group-item list-group-item-action" @onclick="(() => ShowDirector(director.PersonId))">@director.Name</a>
+            }
+        </div>
+    </div>
+    <div class="container float-left align-text-top">
+        <div class="bd-example">
+            <nav id="navbar-example2" class="navbar navbar-light bg-faded">
+                <a class="navbar-brand" href="#">Tags</a>
+                <ul class="nav nav-pills">
+                </ul>
+            </nav>
+            <div class="scrollspy-container">
+                <div data-spy="scroll" data-target="#navbar-example2" data-offset="0" class="scrollspy-example">
+                    <div class="scroll">
+                        <div class="row flex-row flex-nowrap">
+                            @foreach (var tag in @movie.Tags)
+                            {
+                                <button class="btn btn-primary" @onclick="(() => ShowTag(tag.TagId))">@tag.Name</button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container float-left">
+        <div class="bd-example">
+            <nav id="navbar-example2" class="navbar navbar-light bg-faded">
+                <a class="navbar-brand" href="#">Similar</a>
+                <ul class="nav nav-pills">
+                </ul>
+            </nav>
+            <div class="container">
+                <div class="row">
+                    @foreach (var movie in @similarMovies)
+                    {
+                        <div class="card" @onclick="(() => ShowMovie(movie.ImdbId))">
+                            <img class="card-img-top" src=@movie.Poster>
+                            <p class="card-text">@movie.EngName</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@code {
+    [Parameter]
+    public string Id { get; set; }
+    public string Description { get; set; }
+    public string Image { get; set; }
+    BlazorMovies.Shared.Movie movie = null;
+    List<BlazorMovies.Shared.Movie> similarMovies = new List<BlazorMovies.Shared.Movie>();
+    protected override async Task OnParametersSetAsync()
+    {
+        movie = await MovieService.GetMovie(Id);
+        similarMovies = await MovieService.GetSimilarMovies(movie);
+        await OmdbService.GetMoviePlotAndPoster(movie);
+        foreach (BlazorMovies.Shared.Movie movie in similarMovies)
+        {
+            await OmdbService.GetMoviePlotAndPoster(movie);
+        }
+        MovieService.OnChange += StateHasChanged;
+    }
+    void ShowActor(string id)
+    {
+        NavigationManager.NavigateTo($"actors/{id}");
+    }
+    void ShowDirector(string id)
+    {
+        NavigationManager.NavigateTo($"directors/{id}");
+    }
+    void ShowTag(string id)
+    {
+        NavigationManager.NavigateTo($"tags/{id}");
+    }
+    void ShowMovie(string id)
+    {
+        NavigationManager.NavigateTo($"movies/{id}");
+    }
+}

@@ -1,0 +1,46 @@
+﻿@page "/movies/search/{name}"
+@inject IMovieService MovieService
+@inject NavigationManager NavigationManager
+@inject HttpClient Http
+
+@if (movies == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Found movies</th>
+            </tr>
+        </thead>
+        <tbody>
+            <div class="scroll">
+
+                @foreach (var movie in movies)
+                {
+                <tr>
+                    <td>
+                        <button class="btn btn-primary" @onclick="(() => ShowMovie(movie.ImdbId))">@movie.EngName</button>
+                    </td>
+                </tr>
+                }
+                </div>
+            </tbody>
+        </table>
+}
+@code {
+    [Parameter]
+    public string Name { get; set; }
+    List<BlazorMovies.Shared.Movie> movies = null;
+    protected override async Task OnParametersSetAsync()
+    {
+        movies = await MovieService.GetMoviesByName(Name);
+        MovieService.OnChange += StateHasChanged;
+    }
+    void ShowMovie(string id)
+    {
+        NavigationManager.NavigateTo($"movies/{id}");
+    }
+}

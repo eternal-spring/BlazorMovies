@@ -1,0 +1,68 @@
+﻿@page "/directors/{id}"
+@inject IMovieService MovieService
+@inject NavigationManager NavigationManager
+@inject HttpClient Http
+<head>
+    <style>
+        .scroll {
+            margin: 8px, 8px;
+            padding: 8px;
+            overflow: auto;
+            height: 800px;
+            white-space: nowrap;
+            position: relative;
+            flex-wrap: wrap;
+            width: 350px;
+            align-items: stretch;
+        }
+        .scroll > btn-primary {
+            color: #fff;
+            background-color: #1b6ec2;
+            border-color: #1861ac;
+            max-width: 300px;
+            max-height: 300px;
+        }
+
+    </style>
+</head>
+@if (director == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <h1>@director.Name</h1>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Movies</th>
+                </tr>
+            </thead>
+            <tbody>
+                <div class="scroll">
+                    @foreach (var movie in director.Movies)
+                    {
+                    <tr>
+                        <td>
+                            <button class="btn btn-primary" style="max-width:300px;" @onclick="(() => ShowMovie(movie.ImdbId))">@movie.EngName </button>
+                        </td>
+                    </tr>
+                }
+        </div>
+        </tbody>
+        </table>
+    }
+@code {
+    [Parameter]
+    public string Id { get; set; }
+    BlazorMovies.Shared.Director director = null;
+    protected override async Task OnParametersSetAsync()
+    {
+        director = await MovieService.GetDirector(Id);
+        MovieService.OnChange += StateHasChanged;
+    }
+    void ShowMovie(string id)
+    {
+        NavigationManager.NavigateTo($"movies/{id}");
+    }
+}

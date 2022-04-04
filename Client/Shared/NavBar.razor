@@ -1,0 +1,72 @@
+﻿@inject NavigationManager NavigationManager
+
+<div class="top-row navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="#"></a>
+    <button class="navbar-toggler" @onclick="ToggleNavMenu">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+                <a class="nav-link" href="#"> <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    @DropdownMenuName
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <a class="dropdown-item" @onclick="(()=>ChangeSearher(MoviesButton))">@MoviesButton</a>
+                    <a class="dropdown-item" @onclick="(()=>ChangeSearher(ActorsButton))">@ActorsButton</a>
+                    <a class="dropdown-item" @onclick="(()=>ChangeSearher(DirectorsButton))">@DirectorsButton</a>
+                    <a class="dropdown-item" @onclick="(()=>ChangeSearher(TagsButton))">@TagsButton</a>
+                </div>
+            </li>
+        </ul>
+        <form class="form-inline my-2 my-lg-0">
+            <input class="form-control mr-sm-2" @bind-value="filter" type="search" placeholder="Search" aria-label="Search">
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit" @onclick="HandleSearch">Search</button>
+        </form>
+    </div>
+</div>
+
+@code {
+    private string filter;
+    private string MoviesButton = "Movies";
+    private string ActorsButton = "Actors";
+    private string DirectorsButton = "Directors";
+    private string TagsButton = "Tags";
+    private string DropdownMenuName = "Movies";
+    private void HandleSearch()
+    {
+        if (DropdownMenuName == MoviesButton)
+        {
+            NavigationManager.NavigateTo($"movies/search/{filter}");
+        }
+        else if (DropdownMenuName == ActorsButton)
+        {
+            NavigationManager.NavigateTo($"actors/search/{filter}");
+        }
+        else if (DropdownMenuName == DirectorsButton)
+        {
+            NavigationManager.NavigateTo($"directors/search/{filter}");
+        }
+        else if (DropdownMenuName == TagsButton)
+        {
+            NavigationManager.NavigateTo($"tags/search/{filter}");
+        }
+    }
+    private void ChangeSearher(string searcher)
+    {
+        DropdownMenuName = searcher;
+    }
+    private bool collapseNavMenu = true;
+
+    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+
+}

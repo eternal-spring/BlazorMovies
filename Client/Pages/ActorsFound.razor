@@ -1,0 +1,46 @@
+﻿@page "/actors/search/{name}"
+@inject IMovieService MovieService
+@inject NavigationManager NavigationManager
+@inject HttpClient Http
+
+@if (actors == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Found actors</th>
+                </tr>
+            </thead>
+            <tbody>
+                <div class="scroll">
+
+                    @foreach (var actor in actors)
+                    {
+                    <tr>
+                        <td>
+                            <button class="btn btn-primary" @onclick="(() => ShowActor(actor.PersonId))">@actor.Name</button>
+                        </td>
+                    </tr>
+                }
+        </div>
+        </tbody>
+        </table>
+    }
+@code {
+    [Parameter]
+    public string Name { get; set; }
+    List<BlazorMovies.Shared.Actor> actors = null;
+    protected override async Task OnParametersSetAsync()
+    {
+        actors = await MovieService.GetActorsByName(Name);
+        MovieService.OnChange += StateHasChanged;
+    }
+    void ShowActor(string id)
+    {
+        NavigationManager.NavigateTo($"actors/{id}");
+    }
+}

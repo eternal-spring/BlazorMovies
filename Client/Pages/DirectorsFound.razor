@@ -1,0 +1,46 @@
+﻿@page "/directors/search/{name}"
+@inject IMovieService MovieService
+@inject NavigationManager NavigationManager
+@inject HttpClient Http
+
+@if (directors == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Found directors</th>
+                </tr>
+            </thead>
+            <tbody>
+                <div class="scroll">
+
+                    @foreach (var director in directors)
+                    {
+                    <tr>
+                        <td>
+                            <button class="btn btn-primary" @onclick="(() => ShowDirector(director.PersonId))">@director.Name</button>
+                        </td>
+                    </tr>
+                }
+        </div>
+        </tbody>
+        </table>
+    }
+@code {
+    [Parameter]
+    public string Name { get; set; }
+    List<BlazorMovies.Shared.Director> directors = null;
+    protected override async Task OnParametersSetAsync()
+    {
+        directors = await MovieService.GetDirectorsByName(Name);
+        MovieService.OnChange += StateHasChanged;
+    }
+    void ShowDirector(string id)
+    {
+        NavigationManager.NavigateTo($"directors/{id}");
+    }
+}
